@@ -9,7 +9,13 @@ Here's my website.
 
 ___
 
+
 ```{r echo=FALSE}
 knitr::include_graphics("./Media/test_picture.png")
 ```
 
+```{r}
+
+```
+
+**[About Me](http://Noahjc26.github.io/about_me/index.html)**
