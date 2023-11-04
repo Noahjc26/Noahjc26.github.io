@@ -1,0 +1,9 @@
+---
+title: "Final Project"
+author: "Noah Christensen"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```

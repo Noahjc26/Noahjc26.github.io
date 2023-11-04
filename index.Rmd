@@ -2,6 +2,8 @@
 output: html_document
 ---
 
+
+
 # Noah Christensen
 
 Here's my website. 
@@ -14,8 +16,16 @@ ___
 knitr::include_graphics("./Media/test_picture.png")
 ```
 
+# About Me
+
+**[About Me](http://Noahjc26.github.io/about_me/index.html)**
+
 ```{r}
 
 ```
 
-**[About Me](http://Noahjc26.github.io/about_me/index.html)**
+# Final Project
+
+**[Final Project](http://Noahjc26.github.io/final_project/index.html)**
+
+<br><br>
