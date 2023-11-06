@@ -355,7 +355,46 @@ display: none;
 </div>
 
 
+<div id="packages-used" class="section level3">
+<h3>packages used</h3>
+<pre class="r"><code>library(raster)
+library(terra)
+library(tidyverse)
+library(janitor)
+library(plotly)
+library(cowplot)
+library(prismatic)
+library(stringr)
+library(tmap)
+library(mapedit)
+library(rpart)
+library(rpart.plot)
+library(rasterVis)
+library(mapview)
+library(caret)
+library(forcats)</code></pre>
+<hr />
+</div>
+<div id="hyperion" class="section level1">
+<h1>HYPERION</h1>
+<hr />
+<div id="inserting-spectral-library-from-usgs" class="section level3">
+<h3>Inserting spectral library from USGS</h3>
+<pre class="r"><code>#reading in spectral mineral signatures
+minerals &lt;- list.files(path=&quot;../../usgs_spectral_library/usgs_splib07 (1)/ASCIIdata/ASCIIdata_splib07b_cvHYPERION/ChapterM_Minerals/&quot;, full.names=TRUE)
 
+#list applying as csv and into a data frame
+minerals &lt;- minerals %&gt;% 
+  lapply(read.csv) %&gt;% 
+  as.data.frame() %&gt;% 
+  clean_names() %&gt;% 
+  mutate(Bands = row_number())
+
+#removing non-working bands
+minerals &lt;- minerals[c(8:57,77:224),]</code></pre>
+<p>Download Hyperion in L1T product in geotiff format</p>
+</div>
+</div>
 
 
 
