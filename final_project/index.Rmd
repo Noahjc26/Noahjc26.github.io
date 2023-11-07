@@ -9,6 +9,13 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+Geologic maps serve as a valuable tool in resource exploration. 
+Traditional geologic mapping is characterized by time-intensive and high-cost fieldwork, but through multispectral and hyperspectral remotely sensed images it is possible to map extensive areas instantly.
+
+
+
+
 ### packages used
 
 ```{r warning=FALSE, message=FALSE, echo=TRUE}
@@ -34,6 +41,82 @@ ___
 
 # HYPERION
 ___
+
+
+Hyperion data was downloaded from the [USGS EARTH EXPLORER](https://earthexplorer.usgs.gov/) as an *L1T Product in GeoTiff format*
+
+Reading in L1T product
+
+```{r,eval=FALSE}
+l <- list.files(path="../../Hyperion/sevier_lake/EO1H0380332014325110PZ_1T/",
+                pattern='TIF$',
+                full.names=TRUE)
+```
+
+
+Rasterizing only working bands with the terra package
+
+```{r,eval=FALSE}
+r <- rast(l[c(8:57,77:224)])
+```
+
+
+*[Hyperion Band information](https://developers.google.com/earth-engine/datasets/catalog/EO1_HYPERION#bands)* collected and cleaned
+```{r,eval=FALSE}
+# reading in csv of hyperion band information
+# removing random extra columns
+# removing random extra rows
+Hyperion_Bands <- read.csv("Hyperion_Bands_Wavelengths.csv") %>%
+  select(-c(X,X.1,X.2,X.3))
+Hyperion_Bands <- Hyperion_Bands[-(199:235),]
+
+# removing nm and FWHM: in wavelength column
+Hyperion_Bands$Wavelength <- gsub("nm","",Hyperion_Bands$Wavelength)
+Hyperion_Bands$Wavelength <- gsub("FWHM:","",Hyperion_Bands$Wavelength)
+
+# separating Wavelength and FWHM into their own columns
+# separating VNIR and SWIR from band names
+Hyperion_Bands <- Hyperion_Bands %>% 
+  as.data.frame() %>% 
+  separate(Wavelength,into = c("Wavelength_nm","FWHM_nm"),sep=",",convert = TRUE) %>%
+  separate(Description,into = c("Description", "Temp", "Temp2"),sep=" ") %>%
+  rename("Bands" = "Band_Name")
+
+# removing temp columns 
+Hyperion_Bands <- subset(Hyperion_Bands, select = -c(Temp, Temp2))
+
+#adding value in new column based on Hyperion_Bands$Description
+vect <- if_else(Hyperion_Bands$Description == "VNIR",40,80)
+
+#adding vect as new column
+Hyperion_Bands$Rad_Conv = vect
+
+head(Hyperion_Bands)
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+Hyperion_Bands <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/cleaned_hyperion_band_info.rds")
+head(Hyperion_Bands)
+```
+
+
+Reading in metadata and setting up variables for Hyperion reflectance correction
+
+```{r,eval=FALSE}
+md <- read_lines("../../Hyperion/sevier_lake/EO1H0380332014325110PZ_1T/EO1H0380332014325110PZ_MTL_L1T.TXT")
+
+julian_day <- as.numeric(word(md[18], 8))     #julian day
+d <- (1-0.01672*cos(0.9865*(julian_day-4)))   #earth sun distance in astronomical distance
+sun_elevation <- as.numeric(word(md[300],7))  #sun elevation
+s <- (90-sun_elevation)                       #solar zenith angle in degrees
+```
+
+Equation to correct Hyperion DN values into surface reflectance values
+
+```{r,eval=FALSE}
+#correcting to surface reflectance
+Surf_Reflectance = (pi*(r/Hyperion_Bands$Rad_Conv)*d^2)/(cos(s*pi/180)*Hyperion_Bands$Irradiance)
+```
+
 
 ### Inserting spectral library from USGS
 

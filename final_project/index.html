@@ -355,6 +355,11 @@ display: none;
 </div>
 
 
+<p>Geologic maps serve as a valuable tool in resource exploration.
+Traditional geologic mapping is characterized by time-intensive and
+high-cost fieldwork, but through multispectral and hyperspectral
+remotely sensed images it is possible to map extensive areas
+instantly.</p>
 <div id="packages-used" class="section level3">
 <h3>packages used</h3>
 <pre class="r"><code>library(raster)
@@ -378,6 +383,61 @@ library(forcats)</code></pre>
 <div id="hyperion" class="section level1">
 <h1>HYPERION</h1>
 <hr />
+<p>Hyperion data was downloaded from the <a href="https://earthexplorer.usgs.gov/">USGS EARTH EXPLORER</a> as an
+<em>L1T Product in GeoTiff format</em></p>
+<p>Reading in L1T product</p>
+<pre class="r"><code>l &lt;- list.files(path=&quot;../../Hyperion/sevier_lake/EO1H0380332014325110PZ_1T/&quot;,
+                pattern=&#39;TIF$&#39;,
+                full.names=TRUE)</code></pre>
+<p>Rasterizing only working bands with the terra package</p>
+<pre class="r"><code>r &lt;- rast(l[c(8:57,77:224)])</code></pre>
+<p>Reading in metadata and setting up variables for Hyperion reflectance
+correction</p>
+<pre class="r"><code>md &lt;- read_lines(&quot;../../Hyperion/sevier_lake/EO1H0380332014325110PZ_1T/EO1H0380332014325110PZ_MTL_L1T.TXT&quot;)
+
+julian_day &lt;- as.numeric(word(md[18], 8))     #julian day
+d &lt;- (1-0.01672*cos(0.9865*(julian_day-4)))   #earth sun distance in astronomical distance
+sun_elevation &lt;- as.numeric(word(md[300],7))  #sun elevation
+s &lt;- (90-sun_elevation)                       #solar zenith angle in degrees</code></pre>
+<p><em><a href="https://developers.google.com/earth-engine/datasets/catalog/EO1_HYPERION#bands">Hyperion
+Band information</a></em> collected and cleaned</p>
+<pre class="r"><code># reading in csv of hyperion band information
+# removing random extra columns
+# removing random extra rows
+Hyperion_Bands &lt;- read.csv(&quot;Hyperion_Bands_Wavelengths.csv&quot;) %&gt;%
+  select(-c(X,X.1,X.2,X.3))
+Hyperion_Bands &lt;- Hyperion_Bands[-(199:235),]
+
+#bremoving nm and FWHM: in wavelength column
+Hyperion_Bands$Wavelength &lt;- gsub(&quot;nm&quot;,&quot;&quot;,Hyperion_Bands$Wavelength)
+Hyperion_Bands$Wavelength &lt;- gsub(&quot;FWHM:&quot;,&quot;&quot;,Hyperion_Bands$Wavelength)
+
+# separating Wavelength and FWHM into their own columns
+# separating VNIR and SWIR from band names
+Hyperion_Bands &lt;- Hyperion_Bands %&gt;% 
+  as.data.frame() %&gt;% 
+  separate(Wavelength,into = c(&quot;Wavelength_nm&quot;,&quot;FWHM_nm&quot;),sep=&quot;,&quot;,convert = TRUE) %&gt;%
+  separate(Description,into = c(&quot;Description&quot;, &quot;Temp&quot;, &quot;Temp2&quot;),sep=&quot; &quot;) %&gt;%
+  rename(&quot;Bands&quot; = &quot;Band_Name&quot;)
+
+# removing temp columns 
+Hyperion_Bands &lt;- subset(Hyperion_Bands, select = -c(Temp, Temp2))
+
+head(Hyperion_Bands)</code></pre>
+<pre><code>##   Satellite_Name Bands Wavelength_Units Wavelength_nm FWHM_nm Description
+## 1       Hyperion  B008       W/m^2 SRμm        426.82 11.3871        VNIR
+## 2       Hyperion  B009       W/m^2 SRμm        436.99 11.3871        VNIR
+## 3       Hyperion  B010       W/m^2 SRμm        447.17 11.3871        VNIR
+## 4       Hyperion  B011       W/m^2 SRμm        457.34 11.3871        VNIR
+## 5       Hyperion  B012       W/m^2 SRμm        467.52 11.3871        VNIR
+## 6       Hyperion  B013       W/m^2 SRμm        477.69 11.3871        VNIR
+##   Irradiance Irradiance_Units Rad_Conv
+## 1    1650.52         W/m^2-mu       40
+## 2    1714.90         W/m^2-mu       40
+## 3    1994.52         W/m^2-mu       40
+## 4    2034.72         W/m^2-mu       40
+## 5    1970.12         W/m^2-mu       40
+## 6    2036.22         W/m^2-mu       40</code></pre>
 <div id="inserting-spectral-library-from-usgs" class="section level3">
 <h3>Inserting spectral library from USGS</h3>
 <pre class="r"><code>#reading in spectral mineral signatures
