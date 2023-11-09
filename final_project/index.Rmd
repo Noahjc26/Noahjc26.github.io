@@ -4,6 +4,7 @@ author: "Noah Christensen"
 output: rmdformats::downcute
 ---
 
+## **[Home](http://Noahjc26.github.io/index.html)** | **[About Me](http://Noahjc26.github.io/about_me/index.html)** | **[Final Project](http://Noahjc26.github.io/final_project/index.html)**
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -90,8 +91,10 @@ Hyperion_Bands$Rad_Conv = vect
 
 head(Hyperion_Bands)
 ```
+
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-Hyperion_Bands <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/cleaned_hyperion_band_info.rds")
+Hyperion_Bands <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/hyperion_band_info.rds")
 head(Hyperion_Bands)
 ```
 
@@ -117,7 +120,7 @@ Surf_Reflectance = (pi*(r/Hyperion_Bands$Rad_Conv)*d^2)/(cos(s*pi/180)*Hyperion_
 
 
 ```{r include=FALSE}
-Surf_Reflectance <- rast("../../Data_Course_CHRISTENSEN/Final_Project/corrected_EO1H0380332014325110PZ_1T.tif")
+Surf_Reflectance <- rast("../../Hyperion/corrected_EO1H0380332014325110PZ_1T.tif")
 ```
 
 Now we can plot using three bands to create an RGB image
