@@ -1,33 +1,27 @@
 ---
-output: html_document
+output: rmdformats::downcute
 ---
 
 
 
 # Noah Christensen
 
-Here's my website. 
-
 
 ___
 
 
-```{r echo=FALSE}
+```{r eval=FALSE, include=FALSE}
 knitr::include_graphics("./Media/test_picture.png")
 ```
 
-# About Me
-
-**[About Me](http://Noahjc26.github.io/about_me/index.html)**
+## **[About Me](http://Noahjc26.github.io/about_me/index.html)**
 
 ```{r}
 
 ```
 
-# Final Project
 
-
-**[Final Project](http://Noahjc26.github.io/final_project/index.html)**
+## **[Final Project](http://Noahjc26.github.io/final_project/index.html)**
 
 
 <br><br>

@@ -1,7 +1,10 @@
 ---
 title: "About Me"
-author: "Noah Christensen"
-date: "`r Sys.Date()`"
-output: html_document
+output: rmdformats::downcute
 ---
 
+I'm a geology major at Utah Valley University and will be graduating spring of 2024 with my Bachelors and GIS certificate. 
+
+I love my family, friends, and rocks.
+
+Skating, playing the piano, and embroidery are some hobbies I have.
