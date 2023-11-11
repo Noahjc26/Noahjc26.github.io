@@ -5,7 +5,7 @@ output: rmdformats::downcute
 
 ## **[Home](http://Noahjc26.github.io/index.html)** | **[About Me](http://Noahjc26.github.io/about_me/index.html)** | **[Final Project](http://Noahjc26.github.io/final_project/index.html)**
 
-**[RESUME]("http://Noahjc26.github.io/resume/CV_pagedown_short.html")**
+**[RESUME](http://Noahjc26.github.io/resume/CV_pagedown_short.html)**
 
 I'm a geology major at Utah Valley University and will be graduating spring of 2024 with my Bachelors and GIS certificate. 
 
