@@ -7,15 +7,4 @@ output: rmdformats::downcute
 # Noah Christensen
 
 
-```{r eval=FALSE, include=FALSE}
-knitr::include_graphics("./Media/test_picture.png")
-```
-
 ## **[Home](http://Noahjc26.github.io/index.html)** | **[About Me](http://Noahjc26.github.io/about_me/index.html)** | **[Final Project](http://Noahjc26.github.io/final_project/index.html)**
-
-```{r}
-
-```
-
-
-<br><br>

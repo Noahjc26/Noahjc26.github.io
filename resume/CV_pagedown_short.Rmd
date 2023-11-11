@@ -1,0 +1,142 @@
+---
+title: "Geoff Zahn's CV"
+author: Geoffrey Zahn
+date: "`r Sys.Date()`"
+output:
+  pagedown::html_resume:
+    css: ['custom_resume.css']
+    self_contained: true
+knit: pagedown::chrome_print
+---
+```{r include=FALSE}
+library(pagedown)
+library(fontawesome)
+```
+
+Aside
+================================================================================
+
+
+
+Contact Info {#contact}
+--------------------------------------------------------------------------------
+
+- <i class="fa fa-envelope"></i> noahjchristensen5@gmail.com
+- <i class="fa fa-github"></i> [github.com/noahjc26](https://github.com/noahjc26)
+- <i class="fa fa-home"></i> [noahjc26.github.io](https://noahjc26.github.io)
+
+Skills {#skills}
+--------------------------------------------------------------------------------
+
+- #### `r icons::fontawesome$solid$laptop` Computational:
+
+  - **R**
+  - **EXCEL**
+  - **ArcGIS**
+  - **QGIS**
+
+
+
+
+
+
+Main
+================================================================================
+
+Noah Christensen {#title}
+--------------------------------------------------------------------------------
+
+Pleasant Grove, UT
+
+--------------------------------------------------------------------------------
+
+
+
+Education {data-icon=graduation-cap data-concise=true}
+--------------------------------------------------------------------------------
+
+### Utah Valley University
+
+B.S. in Geology, GIS certificate
+
+Orem, UT
+
+2024 - 2019
+
+
+
+<br>
+
+
+
+Research {data-icon=chalkboard-teacher}
+--------------------------------------------------------------------------------
+
+### Remote Sensing Mineral Spectroscopy 
+
+Study of imagery capabilities for
+
+N/A
+
+N/A
+
+### Isotope Bug Analysis
+
+N/A
+
+N/A
+
+N/A
+
+
+<br>
+
+Work Experience {data-icon=briefcase} 
+--------------------------------------------------------------------------------
+
+### Earth Science Student Association President
+
+Event planning, leadership management
+
+UVU
+
+current - 2023
+
+### SVT Advantage
+
+Customer support, digital marketing, production
+
+Orem, UT
+
+current - 2020
+
+### Custodian
+
+Alpine School District
+
+Mt. Mahogany Elementary,
+PG Highschool
+
+2020 - 2017
+
+		
+<br>
+
+
+```{css, echo=FALSE}
+.extra-sidebar {
+  top: 0;
+  padding-top: 0;
+}
+
+.extra-sidebar h1 {
+  display: none;
+}
+
+.extra-sidebar .level2:first-of-type {
+  margin-top: 0;
+}
+```
+
+Second page sidebar {.aside .extra-sidebar}
+================================================================================
