@@ -8,3 +8,8 @@ output: rmdformats::downcute
 
 
 ## **[Home](http://Noahjc26.github.io/index.html)** | **[About Me](http://Noahjc26.github.io/about_me/index.html)** | **[Final Project](http://Noahjc26.github.io/final_project/index.html)**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+knitr::include_graphics("./Media/bicknell.JPG",dpi=500)
+```
+

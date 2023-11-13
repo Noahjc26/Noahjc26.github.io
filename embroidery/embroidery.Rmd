@@ -1,0 +1,19 @@
+---
+title: "Embroidery Projects"
+output: rmdformats::downcute
+---
+
+## **[Home](http://Noahjc26.github.io/index.html)** | **[About Me](http://Noahjc26.github.io/about_me/index.html)** | **[Final Project](http://Noahjc26.github.io/final_project/index.html)**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(cowplot)
+
+knitr::include_graphics("../Media/jacket_1.JPG",dpi = 1500)
+knitr::include_graphics("../Media/jacket_2.JPG",dpi = 1500)
+knitr::include_graphics("../Media/jacket_3.JPG",dpi = 1500)
+knitr::include_graphics("../Media/sk8_emb_2.JPG",dpi = 1130)
+knitr::include_graphics("../Media/dog_hats.jpeg",dpi = 89.5)
+knitr::include_graphics("../Media/radio.jpeg",dpi = 89.5)
+knitr::include_graphics("../Media/radio_glow.jpeg",dpi = 88)
+```
