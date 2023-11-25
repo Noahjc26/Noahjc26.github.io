@@ -20,7 +20,7 @@ Traditional mapping is characterized by time-intensive and high-cost fieldwork, 
 
 ### packages used
 
-```{r warning=FALSE, message=FALSE, echo=TRUE}
+```{r message=FALSE, warning=FALSE}
 library(raster)
 library(terra)
 library(tidyverse)
@@ -37,7 +37,19 @@ library(rasterVis)
 library(mapview)
 library(caret)
 library(forcats)
+library(knitr)
+library(kableExtra)
+library(htmltools)
 ```
+
+
+# Background
+
+```{r}
+knitr::include_graphics("../Media/visualizing_FWHM.png")
+knitr::include_graphics("../Media/satellites_FWHM.png")
+```
+
 
 
 # HYPERION
@@ -61,45 +73,20 @@ r <- rast(l[c(8:57,77:224)])
 ```
 
 ## Hyperion Information
-**[HYPERION BAND INFORMATION](https://developers.google.com/earth-engine/datasets/catalog/EO1_HYPERION#bands)** collected and cleaned
-```{r,eval=FALSE}
-# reading in csv of hyperion band information
-Hyperion_Bands <- read.csv("Hyperion_Bands_Wavelengths.csv") %>%
-  select(-c(X,X.1,X.2,X.3)) # removing random extra columns
-Hyperion_Bands <- Hyperion_Bands[-(199:235),] # removing random extra rows
-
-# removing nm and FWHM: in wavelength column
-Hyperion_Bands$Wavelength <- gsub("nm","",Hyperion_Bands$Wavelength)
-Hyperion_Bands$Wavelength <- gsub("FWHM:","",Hyperion_Bands$Wavelength)
-
-# separating Wavelength and FWHM into their own columns
-# separating VNIR and SWIR from band names
-Hyperion_Bands <- Hyperion_Bands %>% 
-  as.data.frame() %>% 
-  separate(Wavelength,into = c("Wavelength_nm","FWHM_nm"),sep=",",convert = TRUE) %>%
-  separate(Description,into = c("Description", "Temp", "Temp2"),sep=" ") %>%
-  rename("Bands" = "Band_Name")
-
-# removing temp columns 
-Hyperion_Bands <- subset(Hyperion_Bands, select = -c(Temp, Temp2))
-
-#adding value in new column based on Hyperion_Bands$Description
-vect <- if_else(Hyperion_Bands$Description == "VNIR",40,80)
-
-#adding vect as new column
-Hyperion_Bands$Rad_Conv = vect
-
-head(Hyperion_Bands)
-```
-
+**[HYPERION BAND INFORMATION](https://developers.google.com/earth-engine/datasets/catalog/EO1_HYPERION#bands)**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 Hyperion_Bands <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/hyperion_band_info.rds")
-head(Hyperion_Bands)
+
+# Display the DataFrame using kable with styling for a scrollable box
+kbl(Hyperion_Bands) %>%
+  kable_paper() %>%
+  scroll_box(height = "400px")
 ```
 
 ## Correcting Imagery
-Reading in metadata and setting up variables for Hyperion reflectance correction
+When downloading Hyperion imagery it is stored with DN values.
+Using information from the metadata you can correct this to surface reflectance.
 
 ```{r,eval=FALSE}
 md <- read_lines("../../Hyperion/sevier_lake/EO1H0380332014325110PZ_1T/EO1H0380332014325110PZ_MTL_L1T.TXT")
@@ -141,85 +128,17 @@ Surf_Reflectance %>%
 
 Inserting spectral library from **[USGS](https://crustal.usgs.gov/speclab/QueryAll07a.php)**
 
-```{r echo=TRUE, warning=FALSE,message=TRUE}
-#reading in spectral mineral signatures
-minerals <- list.files(path="../../usgs_spectral_library/usgs_splib07 (1)/ASCIIdata/ASCIIdata_splib07b_cvHYPERION/ChapterM_Minerals/", full.names=TRUE)
-
-#list applying as csv and into a data frame
-minerals <- minerals %>% 
-  lapply(read.csv) %>% 
-  as.data.frame() %>% 
-  clean_names() %>% 
-  mutate(Bands = row_number())
-
-#removing non-working bands
-minerals <- minerals[c(8:57,77:224),]
-
-#removing everything before first underscore
-colnames(minerals) = sub(".*?_", "", colnames(minerals))
-
-#removing everything before first underscore (again)
-colnames(minerals) = sub(".*?_", "", colnames(minerals))
-
-#keeping characters only after first two underscores
-colnames(minerals) <- str_extract(colnames(minerals), "[^_]*_[^_]*")
-
-#renaming blank column to band
-colnames(minerals)[1277] = "Band"
-
-#turning into matrix and back to dataframe so col and row are switched
-minerals <- data.frame(t(minerals[-1227]))
-
-#adding row name (mineral) into a column of their own
-minerals <- minerals %>% 
-  mutate(mineral = rownames(minerals))
-
-#renumbering rows instead of mineral names
-rownames(minerals)<-c(1:1276)
-
-#delete row 1276
-minerals <- minerals[-1276,]
-
-#getting rid of negative rows
-minerals <- minerals[minerals$X8 >= 0, ]
-minerals <- minerals[minerals$X192 >= 0, ]
-
-# This function almost renames everything except B009 and B009 are set as B8 and B9
-rename_columns_1 <- function(df) {
-  new_names <- colnames(df)
-  new_names <- sub("^X([0-9])$", "B00\\1", new_names)  # Match and replace 'X8' and 'X9'
-  new_names <- sub("^X", "B0", new_names)  # Replace 'X' with 'B0'
-  new_names <- sub("^B0+", "B", new_names)  # Remove leading zeros
-  new_names <- sub("B$", "B00", new_names)  # Add two trailing zeros if it ends with 'B'
-  new_names <- sub("B(\\d{2}$)", "B0\\1", new_names)  # Add one leading zero
-  colnames(df) <- new_names
-  return(df)
-}
-
-# Using the function
-minerals <- rename_columns_1(minerals)
-
-# This changes B8 and B9 into B008 and B009
-rename_columns_2 <- function(df) {
-  new_names <- colnames(df)
-  new_names <- sub("^B([0-9])$", "B00\\1", new_names)  # Match and replace 'X8' and 'X9'
-  colnames(df) <- new_names
-  return(df)
-}
-
-# Using the function
-minerals <- rename_columns_2(minerals)
-
-# Remove everything before and including the underscore
-minerals$mineral <- sub(".*_", "", minerals$mineral)
-
-#setting as a factor
-minerals$mineral <- as.factor(minerals$mineral)
-
+Here's all the minerals in the USGS spectral library for Hyperion:
+```{r echo=FALSE, message=TRUE, warning=FALSE}
+minerals <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/hyperion_mineral_signatures_cleaned.rds")
 unique(minerals$mineral)
 ```
 
+
 That's a lot of minerals
 
+
+
+Google maps styling function in teams
 
 

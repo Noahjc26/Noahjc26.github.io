@@ -74,13 +74,13 @@ Research {data-icon=chalkboard-teacher}
 
 ### Remote Sensing Mineral Spectroscopy 
 
-Study of imagery capabilities for
-
 N/A
 
 N/A
 
-### Isotope Bug Analysis
+N/A
+
+### Isotope Incect Analysis
 
 N/A
 
