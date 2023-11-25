@@ -16,11 +16,7 @@ Geologic maps serve as a valuable tool in resource exploration.
 Traditional mapping is characterized by time-intensive and high-cost fieldwork, but through multispectral and hyperspectral remotely sensed images it is possible to map extensive areas instantly.
 
 
-
-
-### packages used
-
-```{r message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE, include=FALSE}
 library(raster)
 library(terra)
 library(tidyverse)
@@ -43,16 +39,27 @@ library(htmltools)
 ```
 
 
-# Background
+# **Background**
 
-```{r}
+## FWHM
+Full Width Half Mass (FWHM) is an important concept for understanding how different band values are calculated.
+
+The graph below visualizes the idea of FWHM. Each band in a spectral device only takes in a specific range of wavelengths, often the wavelength for each band is just denoted as the peak, but in reality each sensor is collecting a range of wavelengths.
+This is determined by denoting the FWHM as the area between the 50% transmittance on either side of the curve.
+
+```{r echo=FALSE}
 knitr::include_graphics("../Media/visualizing_FWHM.png")
-knitr::include_graphics("../Media/satellites_FWHM.png")
 ```
 
 
+In this plot you can see all the bands for Landsat 8, Hyperion, and ASTER. With their FWHM denoted as boxes. 
+Its important to point out how Landsat 8 does have a band in the Short Wave Infrared (SWIR), but the FWHM is wide and this means that any SWIR data saved for this band could be attributed to any wavelength inside of the FWHM.
 
-# HYPERION
+```{r echo=FALSE}
+knitr::include_graphics("../Media/satellites_FWHM.png")
+```
+
+# **HYPERION**
 
 
 Hyperion data was downloaded from the **[USGS EARTH EXPLORER](https://earthexplorer.usgs.gov/)** as an *L1T Product in GeoTiff format*
@@ -131,7 +138,24 @@ Inserting spectral library from **[USGS](https://crustal.usgs.gov/speclab/QueryA
 Here's all the minerals in the USGS spectral library for Hyperion:
 ```{r echo=FALSE, message=TRUE, warning=FALSE}
 minerals <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/hyperion_mineral_signatures_cleaned.rds")
-unique(minerals$mineral)
+# Unique values of the "mineral" column
+unique_minerals <- unique(minerals$mineral)
+
+# Set the number of columns you want
+num_columns <- 7
+
+# Determine the number of rows needed
+num_rows <- ceiling(length(unique_minerals) / num_columns)
+
+# Create a matrix to reshape the data
+minerals_matrix <- matrix(unique_minerals, ncol = num_columns, byrow = TRUE)
+
+# Convert the matrix back to a data frame
+minerals_df <- as.data.frame(minerals_matrix)
+
+# Display the table using kable
+kable(minerals_df, format = "html",col.names = NULL) %>%
+  kable_styling("striped", full_width = FALSE)
 ```
 
 
