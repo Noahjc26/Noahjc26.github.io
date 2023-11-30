@@ -44,6 +44,7 @@ library(htmltools)
 ## FWHM
 Full Width Half Mass (FWHM) is an important concept for understanding how different band values are calculated.
 
+Bandpass filters are used to isolate specific wavelengths.
 The graph below visualizes the idea of FWHM. Each band in a spectral device only takes in a specific range of wavelengths, often the wavelength for each band is just denoted as the peak, but in reality each sensor is collecting a range of wavelengths.
 This is determined by denoting the FWHM as the area between the 50% transmittance on either side of the curve.
 
@@ -58,6 +59,91 @@ Its important to point out how Landsat 8 does have a band in the Short Wave Infr
 ```{r echo=FALSE}
 knitr::include_graphics("../Media/satellites_FWHM.png")
 ```
+
+# **Landsat**
+
+Loading in and cropping the imagery:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(rasterVis)
+library(raster)
+library(tidyverse)
+library(viridis)
+library(gridExtra)
+library(shiny)
+library(shinyjs)
+library(imager)
+
+
+band1 <- raster("../../landsat/LC09_L2SP_038033_20230715_20230717_02_T1/LC09_L2SP_038033_20230715_20230717_02_T1_SR_B1.TIF")
+band2 <- raster("../../landsat/LC09_L2SP_038033_20230715_20230717_02_T1/LC09_L2SP_038033_20230715_20230717_02_T1_SR_B2.TIF")
+band3 <- raster("../../landsat/LC09_L2SP_038033_20230715_20230717_02_T1/LC09_L2SP_038033_20230715_20230717_02_T1_SR_B3.TIF")
+band4 <- raster("../../landsat/LC09_L2SP_038033_20230715_20230717_02_T1/LC09_L2SP_038033_20230715_20230717_02_T1_SR_B4.TIF")
+band5 <- raster("../../landsat/LC09_L2SP_038033_20230715_20230717_02_T1/LC09_L2SP_038033_20230715_20230717_02_T1_SR_B5.TIF")
+band6 <- raster("../../landsat/LC09_L2SP_038033_20230715_20230717_02_T1/LC09_L2SP_038033_20230715_20230717_02_T1_SR_B6.TIF")
+band7 <- raster("../../landsat/LC09_L2SP_038033_20230715_20230717_02_T1/LC09_L2SP_038033_20230715_20230717_02_T1_SR_B7.TIF")
+
+
+# Read Landsat imagery stack
+landsat_stack <- stack(band1,band2,band3,band4,band5,band6,band7)
+
+#setting extent
+e <- as(extent(360000, 390000, 4235000, 4265000),'SpatialPolygons')
+
+#cropping
+cropped <- crop(landsat_stack,e)
+
+plotRGB(cropped, r=4,g=3,b=2, main = "Original RGB",stretch="lin")
+```
+
+
+Now lets make some plots of different mineral groups:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# 4/2 (iron-oxides), 6/7 (hydroxyl and clay min- erals) and 6/5 (ferrous minerals) 
+iron_oxides <- (cropped[[4]])/(cropped[[2]])
+cropped[[8]] = iron_oxides
+
+levelplot(cropped[[8]], 
+          col.regions = viridis(200),
+          main = "Iron Oxides")
+
+#creating hydroxyl band
+hydroxyl <- (cropped[[6]])/(cropped[[7]])
+cropped[[9]] = hydroxyl
+
+levelplot(cropped[[9]], 
+          col.regions = viridis(200),
+          main = "Hydroxyl")
+
+#creating ferrous band
+ferrous <- (cropped[[6]])/(cropped[[5]])
+cropped[[10]] = ferrous
+
+levelplot(cropped[[10]], 
+          col.regions = viridis(200),
+          main = "Ferrous")
+```
+
+
+A Sabins Ratio plot can be created by combining these three plots into an RGB profile.
+This leaves colors show a few different things
+-
+-
+
+```{r}
+plotRGB(cropped, r = 8, g = 9, b = 10, axes = FALSE, 
+        stretch = "lin", main = "Sabins Ratio", margins=TRUE)
+
+
+#adding a legend manually
+legend("left", legend = c("Iron-oxide", "clay-hydroxyl", "ferrous"), fill = c("red","green","blue"))
+```
+
+
+
+
+
 
 # **HYPERION**
 
