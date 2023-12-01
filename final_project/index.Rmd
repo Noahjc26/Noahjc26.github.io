@@ -12,8 +12,9 @@ library(rmdformats)
 ```
 
 
-Geologic maps serve as a valuable tool in resource exploration.
-Traditional mapping is characterized by time-intensive and high-cost fieldwork, but through multispectral and hyperspectral remotely sensed images it is possible to map extensive areas instantly.
+### Geologic maps serve as a valuable tool in resource exploration.Traditional mapping is characterized by time-intensive and high-cost fieldwork, but through multispectral and hyperspectral remotely sensed images it is possible to map extensive areas instantly.
+
+## Geologic background of Marysvale volcanics
 
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
@@ -36,6 +37,15 @@ library(forcats)
 library(knitr)
 library(kableExtra)
 library(htmltools)
+library(rasterVis)
+library(viridis)
+library(gridExtra)
+library(shiny)
+library(shinyjs)
+library(imager)
+library(leaflet)
+library(sf)
+library(rgdal)
 ```
 
 
@@ -65,14 +75,6 @@ knitr::include_graphics("../Media/satellites_FWHM.png")
 Loading in and cropping the imagery:
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-library(rasterVis)
-library(raster)
-library(tidyverse)
-library(viridis)
-library(gridExtra)
-library(shiny)
-library(shinyjs)
-library(imager)
 
 
 band1 <- raster("../../landsat/LC09_L2SP_038033_20230715_20230717_02_T1/LC09_L2SP_038033_20230715_20230717_02_T1_SR_B1.TIF")
@@ -92,9 +94,46 @@ e <- as(extent(360000, 390000, 4235000, 4265000),'SpatialPolygons')
 
 #cropping
 cropped <- crop(landsat_stack,e)
-
-plotRGB(cropped, r=4,g=3,b=2, main = "Original RGB",stretch="lin")
 ```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+# Set the center and zoom level for Utah
+utah_location <- c(lat = 39.3200, lon = -111.8883)
+zoom_level <- 7
+
+# Set the UTM coordinates for Marysvale
+marysvale_extent_utm <- list(easting_min = 360000, easting_max = 390000, northing_min = 4235000, northing_max = 4265000)
+
+# Create an sf object with a Point geometry for UTM coordinates
+marysvale_points_utm <- st_sfc(st_point(c(marysvale_extent_utm$easting_min, marysvale_extent_utm$northing_min)),
+                               st_point(c(marysvale_extent_utm$easting_max, marysvale_extent_utm$northing_max))) %>%
+  st_set_crs("+proj=utm +zone=12 +datum=WGS84")
+
+# Transform UTM coordinates to latitude and longitude
+marysvale_points_utm <- st_set_crs(marysvale_points_utm, "+proj=utm +zone=12 +datum=WGS84")
+marysvale_points_lonlat <- st_transform(marysvale_points_utm, "+proj=longlat +datum=WGS84")
+
+# Extract the transformed coordinates
+marysvale_extent <- st_bbox(marysvale_points_lonlat)
+
+# Create a leaflet map with HOT tile layer
+utah_map <- leaflet() %>%
+  setView(lng = utah_location["lon"], lat = utah_location["lat"], zoom = zoom_level) %>%
+  addProviderTiles("OpenStreetMap.HOT") %>%
+  addRectangles(
+    lng1 = marysvale_extent[1], lat1 = marysvale_extent[2],
+    lng2 = marysvale_extent[3], lat2 = marysvale_extent[4],
+    fillColor = "transparent",
+    color = "red",
+    weight = 3
+  )
+
+# Show the map
+utah_map
+
+```
+
 
 
 Now lets make some plots of different mineral groups:
@@ -105,24 +144,21 @@ iron_oxides <- (cropped[[4]])/(cropped[[2]])
 cropped[[8]] = iron_oxides
 
 levelplot(cropped[[8]], 
-          col.regions = viridis(200),
-          main = "Iron Oxides")
+          main = "Iron Oxides", stretch = "hist")
 
 #creating hydroxyl band
 hydroxyl <- (cropped[[6]])/(cropped[[7]])
 cropped[[9]] = hydroxyl
 
 levelplot(cropped[[9]], 
-          col.regions = viridis(200),
-          main = "Hydroxyl")
+          main = "Hydroxyl",stretch = "hist")
 
 #creating ferrous band
 ferrous <- (cropped[[6]])/(cropped[[5]])
 cropped[[10]] = ferrous
 
 levelplot(cropped[[10]], 
-          col.regions = viridis(200),
-          main = "Ferrous")
+          main = "Ferrous", stretch = "hist")
 ```
 
 
@@ -131,7 +167,7 @@ This leaves colors show a few different things
 -
 -
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 plotRGB(cropped, r = 8, g = 9, b = 10, axes = FALSE, 
         stretch = "lin", main = "Sabins Ratio", margins=TRUE)
 
@@ -142,113 +178,49 @@ legend("left", legend = c("Iron-oxide", "clay-hydroxyl", "ferrous"), fill = c("r
 
 
 
+# **ASTER**
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+aster <- rast("../../ASTER/2005_10_01/full_cleaned.tif")
+
+#band 5/7
+band11 <- (aster[[6]]/aster[[8]])
+
+#band 5/4
+band12 <- (aster[[6]]/aster[[1]])
+
+#band 4/5
+band13 <- (aster[[5]]/aster[[6]])
+
+#b6/b8 * b9/b8 calcite index
+band14 <- (aster[[7]]/aster[[9]])*(aster[[10]]/aster[[9]])
+
+#(b7+b9)/b8 kaolinite, sericite, chlorite and epidoteminerals,
+band15 <- (aster[[8]]+aster[[10]])/aster[[9]]
+
+#adding all new ratios
+aster2 <- c(aster,band11,band12,band13,band14,band15)
+
+# off whitish cream color represents hydrothermal alteration
+levelplot(aster2[[13]], 
+          main = "Hydrothermal Alteration", stretch = "lin")
+
+#calcite index
+levelplot(aster2[[14]],
+          main = "Calcite index", stretch = "lin")
+
+#kaolinite, sericite, chlorite and epidoteminerals,
+levelplot(aster2[[15]],
+          main = "kaolinite, sericite, chlorite and epidote minerals", stretch = "lin")
 
 
-
-# **HYPERION**
-
-
-Hyperion data was downloaded from the **[USGS EARTH EXPLORER](https://earthexplorer.usgs.gov/)** as an *L1T Product in GeoTiff format*
-
-Reading in L1T product
-
-```{r,eval=FALSE}
-l <- list.files(path="../../Hyperion/sevier_lake/EO1H0380332014325110PZ_1T/",
-                pattern='TIF$',
-                full.names=TRUE)
 ```
 
-
-Rasterizing only working bands with the terra package
-
-```{r,eval=FALSE}
-r <- rast(l[c(8:57,77:224)])
-```
-
-## Hyperion Information
-**[HYPERION BAND INFORMATION](https://developers.google.com/earth-engine/datasets/catalog/EO1_HYPERION#bands)**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-Hyperion_Bands <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/hyperion_band_info.rds")
+#looking at alteration zones
+plotRGB(aster2,r= 11,g= 12,b= 4,stretch="lin",main = "Alteration zones",axes=FALSE, margins = TRUE)
 
-# Display the DataFrame using kable with styling for a scrollable box
-kbl(Hyperion_Bands) %>%
-  kable_paper() %>%
-  scroll_box(height = "400px")
+#adding a legend manually
+legend("left", legend = c("red", "green", "blue"), fill = c("red","green","blue"))
 ```
-
-## Correcting Imagery
-When downloading Hyperion imagery it is stored with DN values.
-Using information from the metadata you can correct this to surface reflectance.
-
-```{r,eval=FALSE}
-md <- read_lines("../../Hyperion/sevier_lake/EO1H0380332014325110PZ_1T/EO1H0380332014325110PZ_MTL_L1T.TXT")
-
-julian_day <- as.numeric(word(md[18], 8))     #julian day
-d <- (1-0.01672*cos(0.9865*(julian_day-4)))   #earth sun distance in astronomical distance
-sun_elevation <- as.numeric(word(md[300],7))  #sun elevation
-s <- (90-sun_elevation)                       #solar zenith angle in degrees
-```
-
-Equation to correct Hyperion DN values into surface reflectance values
-
-```{r,eval=FALSE}
-#correcting to surface reflectance
-Surf_Reflectance = (pi*(r/Hyperion_Bands$Rad_Conv)*d^2)/(cos(s*pi/180)*Hyperion_Bands$Irradiance)
-
-```
-
-
-```{r include=FALSE}
-Surf_Reflectance <- rast("../../Hyperion/corrected_EO1H0380332014325110PZ_1T.tif")
-```
-
-Now we can plot using three bands to create an RGB image
-
-```{r}
-Surf_Reflectance %>% 
-  plotRGB(r=31,g=20,b=10,stretch = "lin")
-```
-
-```{r}
-
-
-```
-
-
-
-## Spectral Library
-
-Inserting spectral library from **[USGS](https://crustal.usgs.gov/speclab/QueryAll07a.php)**
-
-Here's all the minerals in the USGS spectral library for Hyperion:
-```{r echo=FALSE, message=TRUE, warning=FALSE}
-minerals <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/hyperion_mineral_signatures_cleaned.rds")
-# Unique values of the "mineral" column
-unique_minerals <- unique(minerals$mineral)
-
-# Set the number of columns you want
-num_columns <- 7
-
-# Determine the number of rows needed
-num_rows <- ceiling(length(unique_minerals) / num_columns)
-
-# Create a matrix to reshape the data
-minerals_matrix <- matrix(unique_minerals, ncol = num_columns, byrow = TRUE)
-
-# Convert the matrix back to a data frame
-minerals_df <- as.data.frame(minerals_matrix)
-
-# Display the table using kable
-kable(minerals_df, format = "html",col.names = NULL) %>%
-  kable_styling("striped", full_width = FALSE)
-```
-
-
-That's a lot of minerals
-
-
-
-Google maps styling function in teams
-
 

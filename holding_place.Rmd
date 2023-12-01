@@ -1,0 +1,109 @@
+---
+title: "holding_place"
+author: "Noah Christensen"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+# **HYPERION**
+
+
+Hyperion data was downloaded from the **[USGS EARTH EXPLORER](https://earthexplorer.usgs.gov/)** as an *L1T Product in GeoTiff format*
+
+Reading in L1T product
+
+```{r,eval=FALSE}
+l <- list.files(path="../../Hyperion/sevier_lake/EO1H0380332014325110PZ_1T/",
+                pattern='TIF$',
+                full.names=TRUE)
+```
+
+
+Rasterizing only working bands with the terra package
+
+```{r,eval=FALSE}
+r <- rast(l[c(8:57,77:224)])
+```
+
+## Hyperion Information
+**[HYPERION BAND INFORMATION](https://developers.google.com/earth-engine/datasets/catalog/EO1_HYPERION#bands)**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+Hyperion_Bands <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/hyperion_band_info.rds")
+
+# Display the DataFrame using kable with styling for a scrollable box
+kbl(Hyperion_Bands) %>%
+  kable_paper() %>%
+  scroll_box(height = "400px")
+```
+
+## Correcting Imagery
+When downloading Hyperion imagery it is stored with DN values.
+Using information from the metadata you can correct this to surface reflectance.
+
+```{r,eval=FALSE}
+md <- read_lines("../../Hyperion/sevier_lake/EO1H0380332014325110PZ_1T/EO1H0380332014325110PZ_MTL_L1T.TXT")
+
+julian_day <- as.numeric(word(md[18], 8))     #julian day
+d <- (1-0.01672*cos(0.9865*(julian_day-4)))   #earth sun distance in astronomical distance
+sun_elevation <- as.numeric(word(md[300],7))  #sun elevation
+s <- (90-sun_elevation)                       #solar zenith angle in degrees
+```
+
+Equation to correct Hyperion DN values into surface reflectance values
+
+```{r,eval=FALSE}
+#correcting to surface reflectance
+Surf_Reflectance = (pi*(r/Hyperion_Bands$Rad_Conv)*d^2)/(cos(s*pi/180)*Hyperion_Bands$Irradiance)
+
+```
+
+
+```{r include=FALSE}
+Surf_Reflectance <- rast("../../Hyperion/corrected_EO1H0380332014325110PZ_1T.tif")
+```
+
+Now we can plot using three bands to create an RGB image
+
+```{r}
+Surf_Reflectance %>% 
+  plotRGB(r=31,g=20,b=10,stretch = "lin")
+```
+
+
+## Spectral Library
+
+Inserting spectral library from **[USGS](https://crustal.usgs.gov/speclab/QueryAll07a.php)**
+
+Here's all the minerals in the USGS spectral library for Hyperion:
+```{r echo=FALSE, message=TRUE, warning=FALSE}
+minerals <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/hyperion_mineral_signatures_cleaned.rds")
+# Unique values of the "mineral" column
+unique_minerals <- unique(minerals$mineral)
+
+# Set the number of columns you want
+num_columns <- 7
+
+# Determine the number of rows needed
+num_rows <- ceiling(length(unique_minerals) / num_columns)
+
+# Create a matrix to reshape the data
+minerals_matrix <- matrix(unique_minerals, ncol = num_columns, byrow = TRUE)
+
+# Convert the matrix back to a data frame
+minerals_df <- as.data.frame(minerals_matrix)
+
+# Display the table using kable
+kable(minerals_df, format = "html",col.names = NULL) %>%
+  kable_styling("striped", full_width = FALSE)
+```
+
+
+That's a lot of minerals
+
+
+
+Google maps styling function in teams
+
+
