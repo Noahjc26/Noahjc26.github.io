@@ -16,6 +16,5 @@ Skating, playing the piano, and **[embroidery](http://Noahjc26.github.io/embroid
 
 ```{r echo=FALSE}
 knitr::include_graphics("../Media/me_outside.JPG",dpi=500)
-knitr::include_graphics("../Media/baby_me.jpg",dpi=615)
-knitr::include_graphics("../Media/myk_me.JPG",dpi=513)
+knitr::include_graphics("../Media/myk_me.JPG",dpi=700)
 ```

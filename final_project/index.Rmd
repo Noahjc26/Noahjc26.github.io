@@ -70,9 +70,6 @@ Its important to point out how Landsat 8 does have a band in the Short Wave Infr
 knitr::include_graphics("../Media/satellites_FWHM.png")
 ```
 
-# **Landsat**
-
-Loading in and cropping the imagery:
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -135,24 +132,37 @@ utah_map
 ```
 
 
+# **Landsat**
 
+Landsat is an ongoing satellite imagery collection system with a recurrence interval of 8 days.
 Now lets make some plots of different mineral groups:
 
+To create a map of Iron Oxides with Landsat 8 imagery, you will need to perform bandmath. This image was created using Band4/Band2
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-# 4/2 (iron-oxides), 6/7 (hydroxyl and clay min- erals) and 6/5 (ferrous minerals) 
+# 4/2 (iron-oxides), 6/7 (hydroxyl and clay minerals) and 6/5 (ferrous minerals) 
 iron_oxides <- (cropped[[4]])/(cropped[[2]])
 cropped[[8]] = iron_oxides
 
 levelplot(cropped[[8]], 
           main = "Iron Oxides", stretch = "hist")
+```
 
+
+Hydroxyl mineral mapping can be created using Band6/Band7
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 #creating hydroxyl band
 hydroxyl <- (cropped[[6]])/(cropped[[7]])
 cropped[[9]] = hydroxyl
 
 levelplot(cropped[[9]], 
           main = "Hydroxyl",stretch = "hist")
+```
 
+Ferrous (iron minerals) can be mapped using Band6/Band5
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 #creating ferrous band
 ferrous <- (cropped[[6]])/(cropped[[5]])
 cropped[[10]] = ferrous
@@ -201,14 +211,32 @@ band15 <- (aster[[8]]+aster[[10]])/aster[[9]]
 aster2 <- c(aster,band11,band12,band13,band14,band15)
 
 # off whitish cream color represents hydrothermal alteration
+
+levelplot(aster2[[13]], 
+          main = "Hydrothermal Alteration", stretch = "lin")
+
+aster2[[13]][aster2[[13]] <= 1.6] <- 0
+
 levelplot(aster2[[13]], 
           main = "Hydrothermal Alteration", stretch = "lin")
 
 #calcite index
+
+
+levelplot(aster2[[14]],
+          main = "Calcite index", stretch = "lin")
+
+aster2[[14]][aster2[[14]] <= 1.5] <- 0
+
 levelplot(aster2[[14]],
           main = "Calcite index", stretch = "lin")
 
 #kaolinite, sericite, chlorite and epidoteminerals,
+levelplot(aster2[[15]],
+          main = "kaolinite, sericite, chlorite and epidote minerals", stretch = "lin")
+
+aster2[[15]][aster2[[15]] <= 2.3] <- 0
+
 levelplot(aster2[[15]],
           main = "kaolinite, sericite, chlorite and epidote minerals", stretch = "lin")
 
@@ -217,8 +245,9 @@ levelplot(aster2[[15]],
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+
 #looking at alteration zones
-plotRGB(aster2,r= 11,g= 12,b= 4,stretch="lin",main = "Alteration zones",axes=FALSE, margins = TRUE)
+plotRGB(aster2,r= 11,g= 12,b= 4,stretch="lin",main = "Alteration zones",axes=FALSE)
 
 #adding a legend manually
 legend("left", legend = c("red", "green", "blue"), fill = c("red","green","blue"))
