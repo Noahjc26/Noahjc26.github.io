@@ -14,7 +14,7 @@ library(rmdformats)
 
 ### Geologic maps serve as a valuable tool in resource exploration.Traditional mapping is characterized by time-intensive and high-cost fieldwork, but through multispectral and hyperspectral remotely sensed images it is possible to map extensive areas instantly.
 
-### Geologic background of Marysvale volcanics
+### add in Geologic background of Marysvale volcanics
 
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
@@ -49,11 +49,11 @@ library(rgdal)
 
 ## Bandpass Filters
 
-Bandpass filters are essential for collection and analysis of satellite imagery, they allow specific ranges of electromagnetic wavelengths, or *bands*, to be transmitted while blocking others. 
+Bandpass filters are essential for collection and analysis of satellite imagery, they allow specific ranges of electromagnetic wavelengths, or **bands**, to be transmitted while blocking others. 
 
 ## FWHM
 
-Full Width Half Mass (FWHM) is an important concept for understanding how different bands are delineated.
+**Full Width Half Mass** (FWHM) is an important concept for understanding how different bands are delineated.
 
 The graph below visualizes the idea of FWHM. Each band in a spectral device only takes in a specific range of wavelengths, often the wavelength for each band is just denoted as the peak, but in reality each sensor is collecting a range of wavelengths.
 This is determined by denoting the FWHM as the area between the 50% transmittance on both sides of the curve.
@@ -119,6 +119,7 @@ utah_map
 cropped_beaver <- rast("../../Quads/beaver_quad/cropped_beaver.tif")
 
 plotRGB(cropped_beaver, r = 1, g = 2, b = 3)
+
 ```
 
 
@@ -182,6 +183,7 @@ knitr::include_graphics("../Media/annotated_sabins_landsat8.png")
 
 
 # **ASTER**
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 aster <- rast("../../ASTER/2005_10_01/full_cleaned.tif")
 
@@ -203,40 +205,46 @@ band15 <- (aster[[8]]+aster[[10]])/aster[[9]]
 #adding all new ratios
 aster2 <- c(aster,band11,band12,band13,band14,band15)
 
-# off whitish cream color represents hydrothermal alteration
+```
 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 levelplot(aster2[[13]], 
           main = "Hydrothermal Alteration", stretch = "lin")
 
 aster2[[13]][aster2[[13]] <= 1.6] <- 0
 
+```
 
-#calcite index
+## Calcite Index
 
+Calcite minerals can be mapped using (b6/b8) * (b9/b8)
 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 levelplot(aster2[[14]],
           main = "Calcite index", stretch = "lin")
 
 aster2[[14]][aster2[[14]] <= 1.5] <- 0
+```
 
+## Kaolinite, sericite, chlorite, and epidote index
 
+Kaolinite, sericite, chlorite, and epidote minerals can be mapped using (b7+b9)/b8
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 #kaolinite, sericite, chlorite and epidoteminerals,
 levelplot(aster2[[15]],
           main = "kaolinite, sericite, chlorite and epidote minerals", stretch = "lin")
 
 aster2[[15]][aster2[[15]] <= 2.3] <- 0
 
-
-
 ```
-Alteration zones
+
+## Alteration zones
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 #looking at alteration zones
 plotRGB(aster2,r= 11,g= 12,b= 4,stretch="lin",main = "Alteration zones",axes=FALSE,margins=TRUE)
-
-#adding a legend manually
-legend("left", legend = c("red", "green", "blue"), fill = c("red","green","blue"))
 ```
 
