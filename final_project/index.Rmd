@@ -14,7 +14,7 @@ library(rmdformats)
 
 ### Geologic maps serve as a valuable tool in resource exploration.Traditional mapping is characterized by time-intensive and high-cost fieldwork, but through multispectral and hyperspectral remotely sensed images it is possible to map extensive areas instantly.
 
-## Geologic background of Marysvale volcanics
+### Geologic background of Marysvale volcanics
 
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
@@ -23,7 +23,6 @@ library(terra)
 library(tidyverse)
 library(janitor)
 library(plotly)
-library(cowplot)
 library(prismatic)
 library(stringr)
 library(tmap)
@@ -39,9 +38,6 @@ library(kableExtra)
 library(htmltools)
 library(rasterVis)
 library(viridis)
-library(gridExtra)
-library(shiny)
-library(shinyjs)
 library(imager)
 library(leaflet)
 library(sf)
@@ -51,17 +47,23 @@ library(rgdal)
 
 # **Background**
 
-## FWHM
-Full Width Half Mass (FWHM) is an important concept for understanding how different band values are calculated.
+## Bandpass Filters
 
-Bandpass filters are used to isolate specific wavelengths.
+Bandpass filters are essential for collection and analysis of satellite imagery, they allow specific ranges of electromagnetic wavelengths, or *bands*, to be transmitted while blocking others. 
+
+## FWHM
+
+Full Width Half Mass (FWHM) is an important concept for understanding how different bands are delineated.
+
 The graph below visualizes the idea of FWHM. Each band in a spectral device only takes in a specific range of wavelengths, often the wavelength for each band is just denoted as the peak, but in reality each sensor is collecting a range of wavelengths.
-This is determined by denoting the FWHM as the area between the 50% transmittance on either side of the curve.
+This is determined by denoting the FWHM as the area between the 50% transmittance on both sides of the curve.
 
 ```{r echo=FALSE}
 knitr::include_graphics("../Media/visualizing_FWHM.png")
 ```
 
+
+## Landsat 8, Hyperion, and ASTER bands 
 
 In this plot you can see all the bands for Landsat 8, Hyperion, and ASTER. With their FWHM denoted as boxes. 
 Its important to point out how Landsat 8 does have a band in the Short Wave Infrared (SWIR), but the FWHM is wide and this means that any SWIR data saved for this band could be attributed to any wavelength inside of the FWHM.
@@ -71,33 +73,13 @@ knitr::include_graphics("../Media/satellites_FWHM.png")
 ```
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-
-
-band1 <- raster("../../landsat/LC09_L2SP_038033_20230715_20230717_02_T1/LC09_L2SP_038033_20230715_20230717_02_T1_SR_B1.TIF")
-band2 <- raster("../../landsat/LC09_L2SP_038033_20230715_20230717_02_T1/LC09_L2SP_038033_20230715_20230717_02_T1_SR_B2.TIF")
-band3 <- raster("../../landsat/LC09_L2SP_038033_20230715_20230717_02_T1/LC09_L2SP_038033_20230715_20230717_02_T1_SR_B3.TIF")
-band4 <- raster("../../landsat/LC09_L2SP_038033_20230715_20230717_02_T1/LC09_L2SP_038033_20230715_20230717_02_T1_SR_B4.TIF")
-band5 <- raster("../../landsat/LC09_L2SP_038033_20230715_20230717_02_T1/LC09_L2SP_038033_20230715_20230717_02_T1_SR_B5.TIF")
-band6 <- raster("../../landsat/LC09_L2SP_038033_20230715_20230717_02_T1/LC09_L2SP_038033_20230715_20230717_02_T1_SR_B6.TIF")
-band7 <- raster("../../landsat/LC09_L2SP_038033_20230715_20230717_02_T1/LC09_L2SP_038033_20230715_20230717_02_T1_SR_B7.TIF")
-
-
-# Read Landsat imagery stack
-landsat_stack <- stack(band1,band2,band3,band4,band5,band6,band7)
-
-#setting extent
-e <- as(extent(360000, 390000, 4235000, 4265000),'SpatialPolygons')
-
-#cropping
-cropped <- crop(landsat_stack,e)
-```
+## Location of research
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 # Set the center and zoom level for Utah
 utah_location <- c(lat = 39.3200, lon = -111.8883)
-zoom_level <- 7
+zoom_level <- 6
 
 # Set the UTM coordinates for Marysvale
 marysvale_extent_utm <- list(easting_min = 360000, easting_max = 390000, northing_min = 4235000, northing_max = 4265000)
@@ -131,15 +113,29 @@ utah_map
 
 ```
 
+## Geologic Map
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+cropped_beaver <- rast("../../Quads/beaver_quad/cropped_beaver.tif")
+
+plotRGB(cropped_beaver, r = 1, g = 2, b = 3)
+```
+
+
 
 # **Landsat**
 
 Landsat is an ongoing satellite imagery collection system with a recurrence interval of 8 days.
 Now lets make some plots of different mineral groups:
 
-To create a map of Iron Oxides with Landsat 8 imagery, you will need to perform bandmath. This image was created using Band4/Band2
+## Iron Oxides
+
+Iron Oxides mapping can be created using Band4/Band2
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+#loading in imagery
+cropped <- stack("../../landsat/LC09_L2SP_038033_20230715_20230717_02_T1/cropped.tif")
+
 # 4/2 (iron-oxides), 6/7 (hydroxyl and clay minerals) and 6/5 (ferrous minerals) 
 iron_oxides <- (cropped[[4]])/(cropped[[2]])
 cropped[[8]] = iron_oxides
@@ -148,6 +144,7 @@ levelplot(cropped[[8]],
           main = "Iron Oxides", stretch = "hist")
 ```
 
+## Clay and Hydroxyl
 
 Hydroxyl mineral mapping can be created using Band6/Band7
 
@@ -160,6 +157,8 @@ levelplot(cropped[[9]],
           main = "Hydroxyl",stretch = "hist")
 ```
 
+## Ferrous
+
 Ferrous (iron minerals) can be mapped using Band6/Band5
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -171,19 +170,13 @@ levelplot(cropped[[10]],
           main = "Ferrous", stretch = "hist")
 ```
 
-
+## Sabins Ratio
 A Sabins Ratio plot can be created by combining these three plots into an RGB profile.
-This leaves colors show a few different things
--
--
+
+Iron-oxide dominated areas are mapped in pink, clay and hydroxyl minerals in green and ferrous minerals are discriminated in blue. Hydrothermal alteration areas are represented by the association of green-pink or yellow zones.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-plotRGB(cropped, r = 8, g = 9, b = 10, axes = FALSE, 
-        stretch = "lin", main = "Sabins Ratio", margins=TRUE)
-
-
-#adding a legend manually
-legend("left", legend = c("Iron-oxide", "clay-hydroxyl", "ferrous"), fill = c("red","green","blue"))
+knitr::include_graphics("../Media/annotated_sabins_landsat8.png")
 ```
 
 
@@ -217,8 +210,6 @@ levelplot(aster2[[13]],
 
 aster2[[13]][aster2[[13]] <= 1.6] <- 0
 
-levelplot(aster2[[13]], 
-          main = "Hydrothermal Alteration", stretch = "lin")
 
 #calcite index
 
@@ -228,8 +219,6 @@ levelplot(aster2[[14]],
 
 aster2[[14]][aster2[[14]] <= 1.5] <- 0
 
-levelplot(aster2[[14]],
-          main = "Calcite index", stretch = "lin")
 
 #kaolinite, sericite, chlorite and epidoteminerals,
 levelplot(aster2[[15]],
@@ -237,17 +226,15 @@ levelplot(aster2[[15]],
 
 aster2[[15]][aster2[[15]] <= 2.3] <- 0
 
-levelplot(aster2[[15]],
-          main = "kaolinite, sericite, chlorite and epidote minerals", stretch = "lin")
 
 
 ```
-
+Alteration zones
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 #looking at alteration zones
-plotRGB(aster2,r= 11,g= 12,b= 4,stretch="lin",main = "Alteration zones",axes=FALSE)
+plotRGB(aster2,r= 11,g= 12,b= 4,stretch="lin",main = "Alteration zones",axes=FALSE,margins=TRUE)
 
 #adding a legend manually
 legend("left", legend = c("red", "green", "blue"), fill = c("red","green","blue"))
