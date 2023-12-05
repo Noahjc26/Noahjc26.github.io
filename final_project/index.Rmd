@@ -12,6 +12,8 @@ library(rmdformats)
 ```
 
 
+
+
 ### Geologic maps serve as a valuable tool in resource exploration.Traditional mapping is characterized by time-intensive and high-cost fieldwork, but through multispectral and hyperspectral remotely sensed images it is possible to map extensive areas instantly.
 
 ### add in Geologic background of Marysvale volcanics
@@ -119,7 +121,6 @@ utah_map
 cropped_beaver <- rast("../../Quads/beaver_quad/cropped_beaver.tif")
 
 plotRGB(cropped_beaver, r = 1, g = 2, b = 3)
-
 ```
 
 
