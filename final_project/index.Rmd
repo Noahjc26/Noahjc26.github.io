@@ -16,6 +16,8 @@ library(rmdformats)
 
 ### Geologic maps serve as a valuable tool in resource exploration.Traditional mapping is characterized by time-intensive and high-cost fieldwork, but through multispectral and hyperspectral remotely sensed images it is possible to map extensive areas instantly.
 
+### Being able to calculate areas of interest for potential hydrothermal alteration zones can be extremely useful in determining the history and available resources geologically through remote sensing.
+
 ### add in Geologic background of Marysvale volcanics
 
 
@@ -75,7 +77,7 @@ knitr::include_graphics("../Media/satellites_FWHM.png")
 ```
 
 
-## Location of research
+## **Location of research**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -123,7 +125,125 @@ cropped_beaver <- rast("../../Quads/beaver_quad/cropped_beaver.tif")
 plotRGB(cropped_beaver, r = 1, g = 2, b = 3)
 ```
 
+# **Classification of Land Cover**
 
+It is important to eliminate areas that are not exposed soil or rock to accurately map alteration zones.
+
+Land cover classification over North America is available for download from the **[National Land Cover Database](https://www.mrlc.gov/data)**. 2021 classification was used as that is the most recent year available.
+
+The Landsat imagery tested against the NLCD was collected Oct 19th, 2023.
+
+NLCD has more specific delineations of landcover, I. combined this. and reduced the dimensions to three classifications: **Barren, Snow, and Vegetation**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+vegetation_df_long <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/vegetation_classification_landsat_LC09_L2SP_038033_20231019_20231020_02_T1.rds")
+
+snow_df_long <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/snow_classification_landsat_LC09_L2SP_038033_20231019_20231020_02_T1.rds")
+
+baren_df_long <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/baren_classification_landsat_LC09_L2SP_038033_20231019_20231020_02_T1.rds")
+
+training_points <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/training_points_landsat_LC09_L2SP_038033_20231019_20231020_02_T1.rds")
+
+#joining all of the dataframes together
+part_df <- full_join(vegetation_df_long,snow_df_long)
+full_df <- full_join(part_df,baren_df_long)
+
+full_df <- full_df %>% 
+  select(-ID)
+
+#turning into data frame
+df <- data.frame(training_points)
+
+df <- df %>% 
+  select(-ID)
+#creating model based on column "class" 
+model.class <- rpart(as.factor(class)~.,
+                     data = df,
+                     method = 'class',
+                     control = rpart.control("minsplit" = 1))
+
+#plotting the model as a tree
+rpart.plot(model.class, box.palette = 4, main = "Classification Tree")
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# load in map and locality data
+NLCD<-raster("../../Landcover/nlcd_2021_land_cover_l48_20230630/nlcd_2021_land_cover_l48_20230630.img")
+
+# Define the UTM Zone 12 CRS
+utm_crs <- CRS("+proj=utm +zone=12 +datum=WGS84 +units=m +no_defs")
+
+# Define the extent in UTM Zone 12
+utm_extent <- extent(360000, 390000, 4235000, 4265000)
+utm_extent <- SpatialPolygons(list(Polygons(list(Polygon(cbind(c(utm_extent[1], utm_extent[2], utm_extent[2], utm_extent[1], utm_extent[1]), 
+                                                               c(utm_extent[3], utm_extent[3], utm_extent[4], utm_extent[4], utm_extent[3])))), ID = "utm_extent")), proj4string = utm_crs)
+
+# Transform the UTM extent to the current CRS of NLCD
+utm_extent <- spTransform(utm_extent, crs(NLCD))
+
+# Crop the raster using the transformed extent
+NLCD_cropped <- crop(NLCD, utm_extent)
+
+# Create a new raster with the same attributes as NLCD_cropped
+reclassed_raster <- NLCD_cropped
+
+# Set values below 24 to 1
+reclassed_raster[values(reclassed_raster) < 20] <- 2
+
+# Set values between 24 and 90 to 2
+reclassed_raster[values(reclassed_raster) >= 20 & values(reclassed_raster) <= 40] <- 1
+
+# Set values between 24 and 90 to 2
+reclassed_raster[values(reclassed_raster) >50] <- 1
+
+# Set values above 90 to 3
+reclassed_raster[values(reclassed_raster) >= 40 & values(reclassed_raster) <= 50] <- 3
+
+#reading in classified raster
+ls <- raster("../../landsat/LC09_L2SP_038033_20231019_20231020_02_T1/classification.tif")
+
+# Create a custom legend
+legend_labels <- c("Barren", "Snow", "Vegetation")
+legend_colors <- c("white", "yellow", "darkgreen")
+
+# Plot the raster using levelplot
+levelplot(ls, col.regions = legend_colors, at = c(0.5, 1.5, 2.5, 3.5),
+          margin = FALSE, main = "Landsat Cart classification Land Cover",
+          colorkey = list(labels = list(at = 1:3, labels = legend_labels)))
+
+# Project ls to have the same extent and resolution as reclassed_raster, using method nearest neighbor"
+ls_projected <- projectRaster(ls, reclassed_raster,method = "ngb")
+
+# Assuming reclassed_raster and ls are your rasters
+reference <- values(reclassed_raster)
+predicted <- values(ls_projected)
+
+# Assuming predicted and reference are your vectors
+predicted <- as.factor(predicted)
+reference <- as.factor(reference)
+
+# Create a confusion matrix
+conf_matrix <- confusionMatrix(predicted, reference)
+```
+
+Class 1: Barren
+Class 2: Snow
+Class 3: Vegetation
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Print the confusion matrix
+print(conf_matrix)
+
+# Extract accuracy and other metrics
+accuracy <- conf_matrix$overall["Accuracy"]
+kappa <- conf_matrix$overall["Kappa"]
+
+# Print accuracy and kappa
+cat("Accuracy:", accuracy, "\n")
+cat("Kappa:", kappa, "\n")
+```
 
 # **Landsat**
 
@@ -180,8 +300,6 @@ Iron-oxide dominated areas are mapped in pink, clay and hydroxyl minerals in gre
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 knitr::include_graphics("../Media/annotated_sabins_landsat8.png")
 ```
-
-
 
 # **ASTER**
 
