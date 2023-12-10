@@ -136,7 +136,6 @@ The Landsat imagery tested against the NLCD was collected Oct 19th, 2023.
 NLCD has more specific delineations of landcover, I. combined this. and reduced the dimensions to three classifications: **Barren, Snow, and Vegetation**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-
 vegetation_df_long <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/vegetation_classification_landsat_LC09_L2SP_038033_20231019_20231020_02_T1.rds")
 
 snow_df_long <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/snow_classification_landsat_LC09_L2SP_038033_20231019_20231020_02_T1.rds")
@@ -228,9 +227,9 @@ reference <- as.factor(reference)
 conf_matrix <- confusionMatrix(predicted, reference)
 ```
 
-Class 1: Barren
-Class 2: Snow
-Class 3: Vegetation
+**Class 1: Barren**
+**Class 2: Snow**
+**Class 3: Vegetation**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 # Print the confusion matrix
@@ -248,6 +247,11 @@ cat("Kappa:", kappa, "\n")
 # **Landsat**
 
 Landsat is an ongoing satellite imagery collection system with a recurrence interval of 8 days.
+
+```{r}
+plotRGB(cropped, r=4,g=3,b=2, main = "Original RGB",stretch="lin",axes=FALSE)
+```
+
 Now lets make some plots of different mineral groups:
 
 ## Iron Oxides
@@ -256,14 +260,22 @@ Iron Oxides mapping can be created using Band4/Band2
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #loading in imagery
-cropped <- stack("../../landsat/LC09_L2SP_038033_20230715_20230717_02_T1/cropped.tif")
+cropped <- stack("../../landsat/LC09_L2SP_038033_20231019_20231020_02_T1/cropped_masked.tif")
 
-# 4/2 (iron-oxides), 6/7 (hydroxyl and clay minerals) and 6/5 (ferrous minerals) 
+
+
+# 4/2 (iron-oxides), 6/7 (hydroxyl and clay min- erals) and 6/5 (ferrous minerals) 
 iron_oxides <- (cropped[[4]])/(cropped[[2]])
 cropped[[8]] = iron_oxides
 
+breaks <- c(1.35,2.5)
+
 levelplot(cropped[[8]], 
-          main = "Iron Oxides", stretch = "hist")
+          main = "Iron Oxides",
+          colorkey=FALSE,
+          col.regions =  "green",
+          margin = FALSE,
+          at = breaks)
 ```
 
 ## Clay and Hydroxyl
@@ -275,8 +287,15 @@ Hydroxyl mineral mapping can be created using Band6/Band7
 hydroxyl <- (cropped[[6]])/(cropped[[7]])
 cropped[[9]] = hydroxyl
 
+# Set up breaks for the color scale
+breaks <- c(1.28,2.5)
+
 levelplot(cropped[[9]], 
-          main = "Hydroxyl",stretch = "hist")
+          main = "Hydroxyl",
+          colorkey=FALSE,
+          col.regions =  "green",
+          margin = FALSE,
+          at = breaks)
 ```
 
 ## Ferrous
@@ -288,8 +307,15 @@ Ferrous (iron minerals) can be mapped using Band6/Band5
 ferrous <- (cropped[[6]])/(cropped[[5]])
 cropped[[10]] = ferrous
 
-levelplot(cropped[[10]], 
-          main = "Ferrous", stretch = "hist")
+# Set up breaks for the color scale
+breaks <- c(1.25,2.5)
+
+levelplot(cropped[[10]],
+          at = breaks,
+          margin = FALSE,
+          col.regions = "green",
+          colorkey = FALSE,
+          main = "Ferrous")
 ```
 
 ## Sabins Ratio
@@ -298,7 +324,11 @@ A Sabins Ratio plot can be created by combining these three plots into an RGB pr
 Iron-oxide dominated areas are mapped in pink, clay and hydroxyl minerals in green and ferrous minerals are discriminated in blue. Hydrothermal alteration areas are represented by the association of green-pink or yellow zones.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-knitr::include_graphics("../Media/annotated_sabins_landsat8.png")
+# alteration zones,with iron-oxide, clay-hydroxyl and ferrous minerals dominated areas respectively in pink, green and blue. 
+plotRGB(cropped, r = 8, g = 9, b = 10, axes = FALSE, 
+        stretch = "lin", main = "Sabins Ratio")
+
+knitr::include_graphics("../Media/annotated_sabins_landsat8.png",dpi=263.25)
 ```
 
 # **ASTER**
@@ -362,8 +392,7 @@ aster2[[15]][aster2[[15]] <= 2.3] <- 0
 ## Alteration zones
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-
 #looking at alteration zones
-plotRGB(aster2,r= 11,g= 12,b= 4,stretch="lin",main = "Alteration zones",axes=FALSE,margins=TRUE)
+plotRGB(aster2, r = 11, g = 12, b = 4, stretch = "lin", main = "Alteration zones", axes = FALSE)
 ```
 
