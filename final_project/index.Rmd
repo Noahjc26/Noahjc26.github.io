@@ -177,7 +177,7 @@ model.class <- rpart(as.factor(class)~.,
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #plotting the model as a tree
-rpart.plot(model.class, box.palette = 4, main = "Classification Tree")
+rpart.plot(model.class, box.palette = 0, main = "Classification Tree")
 ```
 
 ## Classified Landsat Image
