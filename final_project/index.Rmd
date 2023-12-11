@@ -12,14 +12,11 @@ library(rmdformats)
 ```
 
 
-
-
-### Geologic maps serve as a valuable tool in resource exploration.Traditional mapping is characterized by time-intensive and high-cost fieldwork, but through multispectral and hyperspectral remotely sensed images it is possible to map extensive areas instantly.
+### Geologic maps serve as a valuable tool in resource exploration. Traditional mapping is characterized by time-intensive and high-cost fieldwork, but through multispectral and hyperspectral remotely sensed images it is possible to map extensive areas instantly.
 
 ### Being able to calculate areas of interest for potential hydrothermal alteration zones can be extremely useful in determining the history and available resources geologically through remote sensing.
 
-### add in Geologic background of Marysvale volcanics
-
+### The Marysvale volcanic field in Utah is one of the largest volcanic fields in the western United States, known for its uranium and alunite deposits. The igneous rocks found here were intruded ~32-20 million years ago, due to the subduction of the Farallon plate, and extension of the Basin and Range.
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 library(raster)
@@ -54,6 +51,12 @@ library(rgdal)
 ## Bandpass Filters
 
 Bandpass filters are essential for collection and analysis of satellite imagery, they allow specific ranges of electromagnetic wavelengths, or **bands**, to be transmitted while blocking others. 
+
+
+```{r echo=FALSE}
+knitr::include_graphics("../Media/Bandpass_filter.jpeg",dpi=75)
+```
+
 
 ## FWHM
 
@@ -117,14 +120,6 @@ utah_map
 
 ```
 
-## Geologic Map
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-cropped_beaver <- rast("../../Quads/beaver_quad/cropped_beaver.tif")
-
-plotRGB(cropped_beaver, r = 1, g = 2, b = 3)
-```
-
 # **Classification of Land Cover**
 
 It is important to eliminate areas that are not exposed soil or rock to accurately map alteration zones.
@@ -135,18 +130,33 @@ The Landsat imagery tested against the NLCD was collected Oct 19th, 2023.
 
 NLCD has more specific delineations of landcover, I. combined this. and reduced the dimensions to three classifications: **Barren, Snow, and Vegetation**
 
+## Original RGB
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+#loading in imagery
+main <- stack("../../landsat/LC09_L2SP_038033_20231019_20231020_02_T1/cropped.tif")
+
+plotRGB(main, r=4,g=3,b=2, main = "Original RGB",stretch="lin")
+
 vegetation_df_long <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/vegetation_classification_landsat_LC09_L2SP_038033_20231019_20231020_02_T1.rds")
 
 snow_df_long <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/snow_classification_landsat_LC09_L2SP_038033_20231019_20231020_02_T1.rds")
 
-baren_df_long <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/baren_classification_landsat_LC09_L2SP_038033_20231019_20231020_02_T1.rds")
+barren_df_long <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/baren_classification_landsat_LC09_L2SP_038033_20231019_20231020_02_T1.rds")
 
 training_points <- readRDS("../../Data_Course_CHRISTENSEN/Final_Project/training_points_landsat_LC09_L2SP_038033_20231019_20231020_02_T1.rds")
 
+# Fixing my mistake of naming barren as baren
+barren_df_long <- barren_df_long %>%
+  mutate(class = ifelse(class == "baren", "barren", class))
+
+# Fixing my mistake of naming barren as baren
+training_points <- training_points %>%
+  mutate(class = ifelse(class == "baren", "barren", class))
+
 #joining all of the dataframes together
 part_df <- full_join(vegetation_df_long,snow_df_long)
-full_df <- full_join(part_df,baren_df_long)
+full_df <- full_join(part_df,barren_df_long)
 
 full_df <- full_df %>% 
   select(-ID)
@@ -161,11 +171,16 @@ model.class <- rpart(as.factor(class)~.,
                      data = df,
                      method = 'class',
                      control = rpart.control("minsplit" = 1))
+```
 
+## Classification tree
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 #plotting the model as a tree
 rpart.plot(model.class, box.palette = 4, main = "Classification Tree")
 ```
 
+## Classified Landsat Image
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 # load in map and locality data
@@ -228,7 +243,9 @@ conf_matrix <- confusionMatrix(predicted, reference)
 ```
 
 **Class 1: Barren**
+
 **Class 2: Snow**
+
 **Class 3: Vegetation**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -248,8 +265,11 @@ cat("Kappa:", kappa, "\n")
 
 Landsat is an ongoing satellite imagery collection system with a recurrence interval of 8 days.
 
-```{r}
-plotRGB(cropped, r=4,g=3,b=2, main = "Original RGB",stretch="lin",axes=FALSE)
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#loading in imagery
+cropped <- stack("../../landsat/LC09_L2SP_038033_20231019_20231020_02_T1/cropped_masked.tif")
+
+plotRGB(cropped, r=4,g=3,b=2, main = "Original RGB",stretch="lin",axes=FALSE,)
 ```
 
 Now lets make some plots of different mineral groups:
@@ -259,10 +279,6 @@ Now lets make some plots of different mineral groups:
 Iron Oxides mapping can be created using Band4/Band2
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-#loading in imagery
-cropped <- stack("../../landsat/LC09_L2SP_038033_20231019_20231020_02_T1/cropped_masked.tif")
-
-
 
 # 4/2 (iron-oxides), 6/7 (hydroxyl and clay min- erals) and 6/5 (ferrous minerals) 
 iron_oxides <- (cropped[[4]])/(cropped[[2]])
@@ -394,5 +410,13 @@ aster2[[15]][aster2[[15]] <= 2.3] <- 0
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #looking at alteration zones
 plotRGB(aster2, r = 11, g = 12, b = 4, stretch = "lin", main = "Alteration zones", axes = FALSE)
+```
+
+## Geologic Map
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+cropped_beaver <- rast("../../Quads/beaver_quad/cropped_beaver.tif")
+
+plotRGB(cropped_beaver, r = 1, g = 2, b = 3)
 ```
 
