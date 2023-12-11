@@ -16,7 +16,6 @@ library(rmdformats)
 
 ### Being able to calculate areas of interest for potential hydrothermal alteration zones can be extremely useful in determining the history and available resources geologically through remote sensing.
 
-### The Marysvale volcanic field in Utah is one of the largest volcanic fields in the western United States, known for its uranium and alunite deposits. The igneous rocks found here were intruded ~32-20 million years ago, due to the subduction of the Farallon plate, and extension of the Basin and Range.
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 library(raster)
@@ -81,6 +80,8 @@ knitr::include_graphics("../Media/satellites_FWHM.png")
 
 
 ## **Location of research**
+
+### The Marysvale volcanic field in Utah is one of the largest volcanic fields in the western United States, known for its uranium and alunite deposits. The igneous rocks found here were intruded ~32-20 million years ago, due to the subduction of the Farallon plate, and extension of the Basin and Range.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -412,9 +413,8 @@ aster2[[15]][aster2[[15]] <= 2.3] <- 0
 plotRGB(aster2, r = 11, g = 12, b = 4, stretch = "lin", main = "Alteration zones", axes = FALSE)
 ```
 
-## Geologic Map
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 cropped_beaver <- rast("../../Quads/beaver_quad/cropped_beaver.tif")
 
 plotRGB(cropped_beaver, r = 1, g = 2, b = 3)
