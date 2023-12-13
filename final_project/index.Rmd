@@ -47,7 +47,7 @@ library(rgdal)
 
 # **Background**
 
-## Bandpass Filters
+## **Bandpass Filters**
 
 Bandpass filters are essential for collection and analysis of satellite imagery, they allow specific ranges of electromagnetic wavelengths, or **bands**, to be transmitted while blocking others. 
 
@@ -56,8 +56,9 @@ Bandpass filters are essential for collection and analysis of satellite imagery,
 knitr::include_graphics("../Media/Bandpass_filter.jpeg",dpi=75)
 ```
 
+---
 
-## FWHM
+## **FWHM**
 
 **Full Width Half Mass** (FWHM) is an important concept for understanding how different bands are delineated.
 
@@ -68,8 +69,9 @@ This is determined by denoting the FWHM as the area between the 50% transmittanc
 knitr::include_graphics("../Media/visualizing_FWHM.png")
 ```
 
+---
 
-## Landsat 8, Hyperion, and ASTER bands 
+## **Landsat 8, Hyperion, and ASTER Bands**
 
 In this plot you can see all the bands for Landsat 8, Hyperion, and ASTER. With their FWHM denoted as boxes. 
 Its important to point out how Landsat 8 does have a band in the Short Wave Infrared (SWIR), but the FWHM is wide and this means that any SWIR data saved for this band could be attributed to any wavelength inside of the FWHM.
@@ -78,10 +80,11 @@ Its important to point out how Landsat 8 does have a band in the Short Wave Infr
 knitr::include_graphics("../Media/satellites_FWHM.png")
 ```
 
+---
 
-## **Location of research**
+## **Location of Research**
 
-### The Marysvale volcanic field in Utah is one of the largest volcanic fields in the western United States, known for its uranium and alunite deposits. The igneous rocks found here were intruded ~32-20 million years ago, due to the subduction of the Farallon plate, and extension of the Basin and Range.
+The Marysvale volcanic field in Utah is one of the largest volcanic fields in the western United States, known for its uranium and alunite deposits. The igneous rocks found here were intruded ~32-20 million years ago, due to the subduction of the Farallon plate, and extension of the Basin and Range.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -121,7 +124,9 @@ utah_map
 
 ```
 
-# **Classification of Land Cover**
+# **Landsat**
+
+## **Classification of Land Cover**
 
 It is important to eliminate areas that are not exposed soil or rock to accurately map alteration zones.
 
@@ -129,9 +134,11 @@ Land cover classification over North America is available for download from the 
 
 The Landsat imagery tested against the NLCD was collected Oct 19th, 2023.
 
-NLCD has more specific delineations of landcover, I. combined this. and reduced the dimensions to three classifications: **Barren, Snow, and Vegetation**
+2021 NLCD was the most recent published dataset. I reduced the dimensions to three classifications: **Barren, Snow, and Vegetation**
 
-## Original RGB
+---
+
+## **Original RGB of Landsat 8 Image**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #loading in imagery
@@ -174,14 +181,22 @@ model.class <- rpart(as.factor(class)~.,
                      control = rpart.control("minsplit" = 1))
 ```
 
-## Classification tree
+
+
+---
+
+## **Classification Tree**
+
+I selected 50 pixels of each class that I designated as Barren, Vegeations, and Snow. These were used in a CART (Classification and Regression Trees) algorithm.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #plotting the model as a tree
 rpart.plot(model.class, box.palette = 0, main = "Classification Tree")
 ```
 
-## Classified Landsat Image
+---
+
+## **Classified Landsat Image**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 # load in map and locality data
@@ -243,6 +258,12 @@ reference <- as.factor(reference)
 conf_matrix <- confusionMatrix(predicted, reference)
 ```
 
+---
+
+## **Confusion Matrix**
+
+Using the NLCD as a reference model, I created a confusion matrix to determine the accuracy of the created predicted raster.
+
 **Class 1: Barren**
 
 **Class 2: Snow**
@@ -252,19 +273,30 @@ conf_matrix <- confusionMatrix(predicted, reference)
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 # Print the confusion matrix
 print(conf_matrix)
-
-# Extract accuracy and other metrics
-accuracy <- conf_matrix$overall["Accuracy"]
-kappa <- conf_matrix$overall["Kappa"]
-
-# Print accuracy and kappa
-cat("Accuracy:", accuracy, "\n")
-cat("Kappa:", kappa, "\n")
 ```
 
-# **Landsat**
+**Sensitivity (True Positive Rate):** The proportion of actual positives correctly predicted.
 
-Landsat is an ongoing satellite imagery collection system with a recurrence interval of 8 days.
+**Specificity (True Negative Rate):** The proportion of actual negatives correctly predicted.
+
+**Pos Pred Value (Positive Predictive Value):** The proportion of predicted positives that are actually positive.
+
+**Neg Pred Value (Negative Predictive Value):** The proportion of predicted negatives that are actually negative.
+
+**Prevalence:** The proportion of actual instances of each class in the dataset.
+
+**Detection Rate:** The proportion of actual positive instances correctly predicted.
+
+**Detection Prevalence:** The proportion of predicted positive instances.
+
+**Balanced Accuracy:** An average of sensitivity and specificity, useful when classes are imbalanced.
+
+
+---
+ 
+## **Masked Landsat Image**
+
+Using classification as a mask to keep only 'barren' pixels.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #loading in imagery
@@ -273,11 +305,17 @@ cropped <- stack("../../landsat/LC09_L2SP_038033_20231019_20231020_02_T1/cropped
 plotRGB(cropped, r=4,g=3,b=2, main = "Original RGB",stretch="lin",axes=FALSE,)
 ```
 
-Now lets make some plots of different mineral groups:
+---
 
-## Iron Oxides
+## **Mineral Group Mapping**
 
-Iron Oxides mapping can be created using Band4/Band2
+Through specific combinations and equations of bands it is possible to create classification rasters for varying mineral groups and assemblages. To avoid over-classification I created a threshold which I deemed as only keeping the highest potential pixels.
+
+---
+
+### **Iron Oxides**
+
+Iron Oxides mapping can be created using Band4/Band2.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -295,7 +333,9 @@ levelplot(cropped[[8]],
           at = breaks)
 ```
 
-## Clay and Hydroxyl
+---
+
+### **Clay and Hydroxyl**
 
 Hydroxyl mineral mapping can be created using Band6/Band7
 
@@ -315,7 +355,9 @@ levelplot(cropped[[9]],
           at = breaks)
 ```
 
-## Ferrous
+---
+
+### **Ferrous**
 
 Ferrous (iron minerals) can be mapped using Band6/Band5
 
@@ -335,7 +377,9 @@ levelplot(cropped[[10]],
           main = "Ferrous")
 ```
 
-## Sabins Ratio
+---
+
+### **Sabins Ratio**
 A Sabins Ratio plot can be created by combining these three plots into an RGB profile.
 
 Iron-oxide dominated areas are mapped in pink, clay and hydroxyl minerals in green and ferrous minerals are discriminated in blue. Hydrothermal alteration areas are represented by the association of green-pink or yellow zones.
@@ -347,6 +391,8 @@ plotRGB(cropped, r = 8, g = 9, b = 10, axes = FALSE,
 
 knitr::include_graphics("../Media/annotated_sabins_landsat8.png",dpi=263.25)
 ```
+
+---
 
 # **ASTER**
 
@@ -382,7 +428,7 @@ aster2[[13]][aster2[[13]] <= 1.6] <- 0
 
 ```
 
-## Calcite Index
+### **Calcite Index**
 
 Calcite minerals can be mapped using (b6/b8) * (b9/b8)
 
@@ -393,7 +439,9 @@ levelplot(aster2[[14]],
 aster2[[14]][aster2[[14]] <= 1.5] <- 0
 ```
 
-## Kaolinite, sericite, chlorite, and epidote index
+---
+
+### **Kaolinite, Sericite, Chlorite, and Epidote Index**
 
 Kaolinite, sericite, chlorite, and epidote minerals can be mapped using (b7+b9)/b8
 
@@ -406,7 +454,9 @@ aster2[[15]][aster2[[15]] <= 2.3] <- 0
 
 ```
 
-## Alteration zones
+---
+
+### **Alteration Zones**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #looking at alteration zones
