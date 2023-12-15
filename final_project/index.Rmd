@@ -41,7 +41,6 @@ library(viridis)
 library(imager)
 library(leaflet)
 library(sf)
-library(rgdal)
 ```
 
 
