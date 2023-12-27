@@ -38,7 +38,6 @@ library(kableExtra)
 library(htmltools)
 library(rasterVis)
 library(viridis)
-library(imager)
 library(leaflet)
 library(sf)
 ```
