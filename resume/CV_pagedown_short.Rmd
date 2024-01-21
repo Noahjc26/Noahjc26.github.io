@@ -10,6 +10,7 @@ knit: pagedown::chrome_print
 ---
 ```{r include=FALSE}
 library(pagedown)
+library(icons)
 library(fontawesome)
 ```
 
@@ -21,19 +22,28 @@ Aside
 Contact Info {#contact}
 --------------------------------------------------------------------------------
 
-- <i class="fa fa-envelope"></i> noahjchristensen5@gmail.com
-- <i class="fa fa-github"></i> [github.com/noahjc26](https://github.com/noahjc26)
-- <i class="fa fa-home"></i> [noahjc26.github.io](https://noahjc26.github.io)
+- <i class="fas fa-envelope"></i> noahjchristensen5@gmail.com
+- <i class="fab fa-github"></i> [github.com/noahjc26](https://github.com/noahjc26)
+- <i class="fas fa-home"></i> 801-376-4084
 
 Skills {#skills}
 --------------------------------------------------------------------------------
 
-- #### `r icons::fontawesome$solid$laptop` Computational:
-
+- #### <i class="fas fa-laptop"></i> Computational:
   - **R**
-  - **EXCEL**
-  - **ArcGIS**
-  - **QGIS**
+	- **Python**
+	- **EXCEL**
+	- **ArcGIS**
+	- **QGIS**
+
+<br>
+
+- #### <i class="fas fa-user"></i> Soft:
+  - **Communication**
+  - **Team Collaboration**
+  - **Problem Solving**
+  - **Critical Thinking**
+  - **Time Management**
 
 
 
@@ -57,50 +67,27 @@ Education {data-icon=graduation-cap data-concise=true}
 
 ### Utah Valley University
 
-B.S. in Geology, GIS certificate
+B.S. in Geology
 
 Orem, UT
 
 2024 - 2019
 
+<br>
 
+### Utah Valley University
+
+GIS Certificate
+
+Orem, UT
+
+2024 - 2022
 
 <br>
 
-
-
-Research {data-icon=chalkboard-teacher}
---------------------------------------------------------------------------------
-
-### Remote Sensing Mineral Spectroscopy 
-
-N/A
-
-N/A
-
-N/A
-
-### Isotope Arthropod Analysis
-
-N/A
-
-N/A
-
-N/A
-
-
-<br>
 
 Work Experience {data-icon=briefcase} 
 --------------------------------------------------------------------------------
-
-### Earth Science Student Association President
-
-Event planning, leadership management
-
-UVU
-
-current - 2023
 
 ### SVT Advantage
 
@@ -110,23 +97,66 @@ Orem, UT
 
 current - 2020
 
+
+<br>
+
 ### Custodian
 
 Alpine School District
 
-Mt. Mahogany Elementary,
-PG Highschool
+Mt. Mahogany ELEM,
+PG HS
 
 2020 - 2017
 
-		
+<br>
+
+<br>
+
+Research and Extracurricular {data-icon=chalkboard-teacher}
+--------------------------------------------------------------------------------
+
+### Earth Science Student Association President
+
+Event planning, leadership management
+
+UVU
+
+2024 - 2023
+
+
+<br>
+
+### Remote Sensing Mineral Spectroscopy 
+
+Hydrothermal alteration mapping using ASTER and Landsat 8 imagery in the Marysvale Volcanics
+
+N/A
+
+2024 - 2023
+
+<br>
+
+### Isotope Ground Beetle Analysis
+
+Stable isotope analysis on ground beetles found in Provo Canyon
+
+N/A
+
+2024 - 2023
+
+<br>
+
 <br>
 
 
 ```{css, echo=FALSE}
-.extra-sidebar {
-  top: 0;
-  padding-top: 0;
+.aside {
+  position: relative;
+  z-index: 1; /* Set a higher z-index for the aside section */
+  background-color: #ADD8E6; /* Light Blue color code */
+  height: 70vh; /* Cover the full height of the viewport */
+  width: 32%;
 }
 
 .extra-sidebar h1 {
@@ -135,6 +165,13 @@ PG Highschool
 
 .extra-sidebar .level2:first-of-type {
   margin-top: 0;
+}
+
+.main {
+  display: block;
+  max-width: 40%;  /* Adjust the maximum width as needed */
+  margin-left: auto;
+  margin-right: auto;
 }
 ```
 
