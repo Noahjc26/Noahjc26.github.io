@@ -151,13 +151,6 @@ N/A
 
 
 ```{css, echo=FALSE}
-.aside {
-  position: relative;
-  z-index: 1; /* Set a higher z-index for the aside section */
-  background-color: #ADD8E6; /* Light Blue color code */
-  height: 70vh; /* Cover the full height of the viewport */
-  width: 32%;
-}
 
 .extra-sidebar h1 {
   display: none;
