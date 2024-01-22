@@ -30,6 +30,7 @@ Skills {#skills}
 --------------------------------------------------------------------------------
 
 - #### <i class="fas fa-laptop"></i> Computational:
+
   - **R**
 	- **Python**
 	- **EXCEL**
@@ -39,6 +40,7 @@ Skills {#skills}
 <br>
 
 - #### <i class="fas fa-user"></i> Soft:
+
   - **Communication**
   - **Team Collaboration**
   - **Problem Solving**
@@ -129,7 +131,7 @@ UVU
 
 ### Remote Sensing Mineral Spectroscopy 
 
-Hydrothermal alteration mapping using ASTER and Landsat 8 imagery in the Marysvale Volcanics
+Hydrothermal alteration mapping using ASTER and Landsat 8 imagery in the Marysvale Volcanics Field
 
 N/A
 
@@ -139,7 +141,7 @@ N/A
 
 ### Isotope Ground Beetle Analysis
 
-Stable isotope analysis on ground beetles found in Provo Canyon
+Stable isotope analysis on ground beetles collected in Provo Canyon for diet reconstruction
 
 N/A
 
